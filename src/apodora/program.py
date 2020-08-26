@@ -24,7 +24,7 @@ class Program:
     ValueError
         If no source code has been provided for the main module.
     """
-    module_to_source: Mapping[str, str] = attr.ib()
+    module_to_source: Mapping[str, str] = attr.ib(repr=False)
     main_module: str = attr.ib(default='__main__')
 
     @main_module.validator
