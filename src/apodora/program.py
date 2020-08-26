@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('Program',)
 
-from typing import Mapping
+from typing import AbstractSet, Mapping
 import functools
 import types
 
@@ -21,6 +21,8 @@ class Program:
         The source code for each module, indexed by module name.
     module_to_ast: Mapping[str, parso.tree.NodeOrLeaf]
         The AST for each module, indexed by module name.
+    modules: AbstractSet[str]
+        The names of the modules for this program.
     main_module: str
         The name of the Python module that provides the entrypoint for the
         program. For now, we do not consider method entrypoints.
@@ -34,6 +36,7 @@ class Program:
     module_to_source: Mapping[str, str] = attr.ib(repr=False)
     module_to_ast: Mapping[str, parso.tree.NodeOrLeaf] = \
         attr.ib(repr=False, init=False)
+    modules: AbstractSet[str] = attr.ib(init=False, repr=False)
     main_module: str = attr.ib(default='__main__')
 
     @main_module.validator
@@ -45,6 +48,9 @@ class Program:
     def __attrs_post_init__(self) -> None:
         module_to_source = types.MappingProxyType(self.module_to_source)
         object.__setattr__(self, 'module_to_source', module_to_source)
+
+        modules: AbstractSet[str] = frozenset(self.module_to_source)
+        object.__setattr__(self, 'modules', modules)
 
         parse_ast = functools.partial(parso.parse, version=self.python)
         module_to_ast: Mapping[str, parso.tree.NodeOrLeaf] = {
