@@ -112,7 +112,6 @@ class BlockVisitor(StmtVisitor):
         return block
 
     def visit_stmt(self, node) -> None:
-        print(f"STMT: {node}")
         self._block.stmts.append(node)
 
     def visit_FunctionDef(self, node) -> None:
@@ -134,13 +133,13 @@ class BlockVisitor(StmtVisitor):
         self._loop_header_block = loop_header_block
 
         # create a block for after the loop
-        loop_end_block = self.create_block(predecessors=[loop_header_block])
-        loop_header_block.successors.append(loop_end_block)
+        loop_end_block = self.create_block()
+        self.create_link(loop_header_block, loop_end_block)
         self._loop_end_block = loop_end_block
 
         # handle the body of the loop
-        loop_body_block = self.create_block(predecessors=[loop_header_block])
-        loop_header_block.successors.append(loop_body_block)
+        loop_body_block = self.create_block()
+        self.create_link(loop_header_block, loop_body_block)
         self._block = loop_body_block
         for stmt in node.body:
             self.visit(stmt)
@@ -148,7 +147,11 @@ class BlockVisitor(StmtVisitor):
         # unless we've encountered a break/continue, connect the last
         # basic block inside the loop to both the header and end of the loop
         if not self._block.successors:
+            print("COOL?")
             self._block.successors += [loop_header_block, loop_end_block]
+
+        # switch to building the loop end block
+        self._block = loop_end_block
 
         # restore the previous loop header and end blocks, if any
         self._loop_header_block = outer_loop_header_block
