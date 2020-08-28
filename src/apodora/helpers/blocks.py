@@ -169,6 +169,7 @@ class BlockVisitor(StmtVisitor):
 
         # after the ifelse
         after_block = self.create_block(predecessors=[body_block, else_block])
+        else_block.successors.append(after_block)
         self._block = after_block
 
     def visit_Return(self, node) -> None:
