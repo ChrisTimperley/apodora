@@ -11,24 +11,28 @@ class NodeVisitor(abc.ABC):
     def visit_children(self, node) -> None:
         ...
 
+    @abc.abstractmethod
+    def visit(self, node) -> None:
+        ...
 
-class Py27NodeVisitor(NodeVisitor, ast27.NodeVisitor):
+    @abc.abstractmethod
+    def generic_visit(self, node) -> None:
+        ...
+
+
+class Py27NodeVisitor(ast27.NodeVisitor, NodeVisitor):
     def visit_children(self, node) -> None:
         for child in ast27.iter_child_nodes(node):
             self.generic_visit(child)
 
 
-class Py3NodeVisitor(NodeVisitor, ast3.NodeVisitor):
+class Py3NodeVisitor(ast3.NodeVisitor, NodeVisitor):
     def visit_children(self, node) -> None:
         for child in ast3.iter_child_nodes(node):
             self.generic_visit(child)
 
 
 class StmtVisitor(NodeVisitor, abc.ABC):
-    @abc.abstractmethod
-    def generic_visit(self, node) -> None:
-        ...
-
     def visit_stmt(self, node) -> None:
         self.generic_visit(node)
 
