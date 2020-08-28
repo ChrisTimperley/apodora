@@ -35,10 +35,13 @@ class ImportFinder(abc.ABC):
 
         def visit_ImportFrom(self, node) -> None:
             if node.level:  # relative imports
+                if self.module == '__main__':
+                    m = 'relative imports not allowed in __main__ script'
+                    raise ValueError(m)
                 import_from = '.'.join(self._module_parts[:-node.level])
-                self.imports.add(import_from)
             else:
-                raise NotImplementedError
+                import_from = node.module
+            self.imports.add(import_from)
 
     @classmethod
     def for_program(cls, program: 'Program') -> 'ImportFinder':
