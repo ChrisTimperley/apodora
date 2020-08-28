@@ -90,6 +90,13 @@ class BlockVisitor(StmtVisitor):
     def inside_loop(self) -> bool:
         return self._loop_header_block is not None
 
+    def create_link(self,
+                    from_block: BasicBlock,
+                    to_block: BasicBlock
+                    ) -> None:
+        from_block.successors.append(to_block)
+        to_block.predecessors.append(from_block)
+
     def create_block(self,
                      *,
                      predecessors: Optional[List['BasicBlock']] = None,
@@ -148,28 +155,28 @@ class BlockVisitor(StmtVisitor):
         self._loop_end_block = outer_loop_end_block
 
     def visit_If(self, node) -> None:
-        print(f"IF: {node}")
         # end the current block
         guard_block = self._block
         guard_block.stmts.append(node)
 
         # body
-        body_block = self.create_block(predecessors=[guard_block])
-        guard_block.successors.append(body_block)
+        body_block = self.create_block()
+        self.create_link(guard_block, body_block)
         self._block = body_block
         for stmt in node.body:
             self.visit(stmt)
 
         # orelse
-        else_block = self.create_block(predecessors=[guard_block])
-        guard_block.successors.append(else_block)
+        else_block = self.create_block()
+        self.create_link(guard_block, else_block)
         self._block = else_block
         for stmt in node.orelse:
             self.visit(stmt)
 
         # after the ifelse
-        after_block = self.create_block(predecessors=[body_block, else_block])
-        else_block.successors.append(after_block)
+        after_block = self.create_block()
+        self.create_link(body_block, after_block)
+        self.create_link(else_block, after_block)
         self._block = after_block
 
     def visit_Return(self, node) -> None:
