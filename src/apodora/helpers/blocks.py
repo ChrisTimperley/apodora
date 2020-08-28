@@ -123,7 +123,6 @@ class BlockVisitor(StmtVisitor):
             m = "no handling of orelse for For statements"
             raise NotImplementedError(m)
 
-        print(f"FOR: {node}")
         outer_loop_header_block = self._loop_header_block
         outer_loop_end_block = self._loop_end_block
 
@@ -131,14 +130,17 @@ class BlockVisitor(StmtVisitor):
         loop_header_block = self._block
         loop_header_block.stmts.append(node)
         self._loop_header_block = loop_header_block
+        logger.debug(f"Loop header block: {loop_header_block}")
 
         # create a block for after the loop
         loop_end_block = self.create_block()
+        logger.debug(f"Loop end block: {loop_end_block}")
         self.create_link(loop_header_block, loop_end_block)
         self._loop_end_block = loop_end_block
 
         # handle the body of the loop
         loop_body_block = self.create_block()
+        logger.debug(f"Loop body block: {loop_body_block}")
         self.create_link(loop_header_block, loop_body_block)
         self._block = loop_body_block
         for stmt in node.body:
@@ -161,9 +163,11 @@ class BlockVisitor(StmtVisitor):
         # end the current block
         guard_block = self._block
         guard_block.stmts.append(node)
+        logger.debug(f"If guard block: {guard_block}")
 
         # body
         body_block = self.create_block()
+        logger.debug(f"If body block: {body_block}")
         self.create_link(guard_block, body_block)
         self._block = body_block
         for stmt in node.body:
@@ -171,6 +175,7 @@ class BlockVisitor(StmtVisitor):
 
         # orelse
         else_block = self.create_block()
+        logger.debug(f"If else block: {else_block}")
         self.create_link(guard_block, else_block)
         self._block = else_block
         for stmt in node.orelse:
@@ -178,6 +183,7 @@ class BlockVisitor(StmtVisitor):
 
         # after the ifelse
         after_block = self.create_block()
+        logger.debug(f"If after block: {after_block}")
         self.create_link(body_block, after_block)
         self.create_link(else_block, after_block)
         self._block = after_block
