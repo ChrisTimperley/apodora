@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('Program',)
 
-from typing import AbstractSet, Generic, Mapping, TypeVar
+from typing import AbstractSet, Callable, Generic, Mapping, TypeVar
 from typed_ast import ast27, ast3
 import functools
 import types
@@ -62,8 +62,9 @@ class Program(Generic[T]):
         module_to_source = types.MappingProxyType(self.module_to_source)
         object.__setattr__(self, 'module_to_source', module_to_source)
 
-        parse_ast = ast27.parse if self.is_py2 else ast3.parse
-        module_to_ast: Mapping[str, parso.tree.NodeOrLeaf] = {
+        parse_ast: Callable[[str], 'T'] = \
+            ast27.parse if self.is_py2 else ast3.parse  # type: ignore
+        module_to_ast: Mapping[str, 'T'] = {
             name: parse_ast(source) for (name, source)
             in module_to_source.items()
         }
