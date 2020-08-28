@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('BlockFinder', 'BlockVisitor')
 
-from typing import Any, List, Optional, MutableSet, Sequence, Set
+from collections import deque
+from typing import Any, Deque, List, Optional, MutableSet, Sequence, Set
 import abc
 import typing
 
@@ -28,7 +29,7 @@ class BlockNumbering:
         return num
 
 
-@attr.s(slots=True, auto_attribs=True)
+@attr.s(slots=True, auto_attribs=True, eq=False, hash=False)
 class BasicBlock:
     number: int = attr.ib()
     stmts: List[Any] = attr.ib(factory=list)  # TODO: figure out type
@@ -36,16 +37,36 @@ class BasicBlock:
     successors: List['BasicBlock'] = attr.ib(factory=list)
     terminal: bool = attr.ib(default=False)
 
+    @property
+    def id(self) -> str:
+        return f'B{self.number}'
+
+    def __hash__(self) -> int:
+        return self.number
+
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, BasicBlock) and other.number == self.number
 
     def __str__(self) -> str:
-        return f"B{self.number}"
+        return self.id
 
     @classmethod
     def create_with_numbering(cls, numbering: BlockNumbering) -> 'BasicBlock':
         number = next(numbering)
         return BasicBlock(number)
+
+    def descendants(self) -> Set['BasicBlock']:
+        q: Deque[BasicBlock] = deque([self])
+        seen = set([self])
+        descendants = set()
+        while q:
+            block = q.pop()
+            descendants.add(block)
+            for successor in block.successors:
+                if successor not in seen:
+                    seen.add(successor)
+                    q.append(successor)
+        return descendants
 
 
 @attr.s(slots=True)
