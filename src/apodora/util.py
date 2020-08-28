@@ -109,31 +109,77 @@ class Py27StmtVisitor(StmtVisitor, Py27NodeVisitor):
 
 
 class Py3StmtVisitor(StmtVisitor, Py3NodeVisitor):
-    def visit_stmt(self, node) -> None:
-        super().visit_stmt(node)
+    def visit_FunctionDef(self, node) -> None:
+        self.visit_stmt(node)
 
-    visit_FunctionDef = visit_stmt
-    visit_AsyncFunctionDef = visit_stmt
-    visit_ClassDef = visit_stmt
-    visit_Return = visit_stmt
-    visit_Delete = visit_stmt
-    visit_Assign = visit_stmt
-    visit_AugAssign = visit_stmt
-    visit_AnnAssign = visit_stmt
-    visit_For = visit_stmt
-    visit_AsyncFor = visit_stmt
-    visit_While = visit_stmt
-    visit_If = visit_stmt
-    visit_With = visit_stmt
-    visit_AsyncWith = visit_stmt
-    visit_Raise = visit_stmt
-    visit_Try = visit_stmt
-    visit_Assert = visit_stmt
-    visit_Import = visit_stmt
-    visit_ImportFrom = visit_stmt
-    visit_Global = visit_stmt
-    visit_Nonlocal = visit_stmt
-    visit_Expr = visit_stmt
-    visit_Pass = visit_stmt
-    visit_Break = visit_stmt
-    visit_Continue = visit_stmt
+    def visit_AsyncFunctionDef(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_ClassDef(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Return(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Delete(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Assign(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_AugAssign(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_AnnAssign(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_For(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_AsyncFor(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_While(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_If(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_With(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_AsyncWith(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Raise(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Try(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Assert(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Import(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_ImportFrom(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Global(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Nonlocal(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Expr(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Pass(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Break(self, node) -> None:
+        self.visit_stmt(node)
+
+    def visit_Continue(self, node) -> None:
+        self.visit_stmt(node)
