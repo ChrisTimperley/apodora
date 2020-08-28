@@ -14,21 +14,51 @@ if typing.TYPE_CHECKING:
     from ..program import Program
 
 
+@attr.s(slots=True)
+class BlockNumbering:
+    _next: int = attr.ib(default=0)
+
+    @classmethod
+    def starting_from(cls, number: int) -> 'BlockNumbering':
+        return BlockNumbering(number)
+
+    def __next__(self) -> int:
+        num = self._next
+        self._next += 1
+        return num
+
+
 @attr.s(slots=True, auto_attribs=True)
 class BasicBlock:
+    number: int = attr.ib()
     stmts: List[Any] = attr.ib(factory=list)  # TODO: figure out type
     predecessors: List['BasicBlock'] = attr.ib(factory=list)
     successors: List['BasicBlock'] = attr.ib(factory=list)
     terminal: bool = attr.ib(default=False)
 
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, BasicBlock) and other.number == self.number
+
+    def __str__(self) -> str:
+        return f"B{self.number}"
+
+    @classmethod
+    def create_with_numbering(cls, numbering: BlockNumbering) -> 'BasicBlock':
+        number = next(numbering)
+        return BasicBlock(number)
+
 
 @attr.s(slots=True)
 class BlockVisitor(StmtVisitor):
-    # TODO: need to maintain entry blocks
-    entry: BasicBlock = attr.ib(factory=BasicBlock)
+    numbering: BlockNumbering = attr.ib(factory=BlockNumbering)
+    entry: BasicBlock = attr.ib(init=False)
     _block: BasicBlock = attr.ib(init=False)
     _loop_header_block: Optional[BasicBlock] = attr.ib(default=None)
     _loop_end_block: Optional[BasicBlock] = attr.ib(default=None)
+
+    def __attrs_post_init__(self) -> None:
+        self.entry = self.create_block()
+        self._block = self.entry
 
     @classmethod
     def for_program(cls, program: 'Program') -> 'BlockVisitor':
@@ -39,8 +69,19 @@ class BlockVisitor(StmtVisitor):
     def inside_loop(self) -> bool:
         return self._loop_header_block is not None
 
-    def __attrs_post_init__(self) -> None:
-        self._block = self.entry
+    def create_block(self,
+                     *,
+                     predecessors: Optional[List['BasicBlock']] = None,
+                     successors: Optional[List['BasicBlock']] = None,
+                     terminal: bool = False
+                     ) -> None:
+        block = BasicBlock.create_with_numbering(self.numbering)
+        block.terminal = terminal
+        if predecessors:
+            block.predecessors = predecessors
+        if successors:
+            block.successors = successors
+        return block
 
     def visit_stmt(self, node) -> None:
         print(f"STMT: {node}")
@@ -65,12 +106,12 @@ class BlockVisitor(StmtVisitor):
         self._loop_header_block = loop_header_block
 
         # create a block for after the loop
-        loop_end_block = BasicBlock(predecessors=[loop_header_block])
+        loop_end_block = self.create_block(predecessors=[loop_header_block])
         loop_header_block.successors.append(loop_end_block)
         self._loop_end_block = loop_end_block
 
         # handle the body of the loop
-        loop_body_block = BasicBlock(predecessors=[loop_header_block])
+        loop_body_block = self.create_block(predecessors=[loop_header_block])
         loop_header_block.successors.append(loop_body_block)
         self._block = loop_body_block
         for stmt in node.body:
@@ -92,34 +133,34 @@ class BlockVisitor(StmtVisitor):
         guard_block.stmts.append(node)
 
         # body
-        body_block = BasicBlock(predecessors=[guard_block])
+        body_block = self.create_block(predecessors=[guard_block])
         guard_block.successors.append(body_block)
         self._block = body_block
         for stmt in node.body:
             self.visit(stmt)
 
         # orelse
-        else_block = BasicBlock(predecessors=[guard_block])
+        else_block = self.create_block(predecessors=[guard_block])
         guard_block.successors.append(else_block)
         self._block = else_block
         for stmt in node.orelse:
             self.visit(stmt)
 
         # after the ifelse
-        after_block = BasicBlock(predecessors=[body_block, else_block])
+        after_block = self.create_block(predecessors=[body_block, else_block])
         self._block = after_block
 
     def visit_Return(self, node) -> None:
         print(node)
         self._block.stmts.append(node)
         self._block.terminal = True
-        self._block = BasicBlock()  # unreachable block
+        self._block = self.create_block(terminal=True)  # unreachable
 
     def visit_Break(self, node) -> None:
         assert self.inside_loop
         self._block.stmts.append(node)
         self._block.successors.append(self._loop_end_block)
-        self._block = BasicBlock(terminal=True)  # unreachable
+        self._block = self.create_block(terminal=True)  # unreachable
 
 
 class _Py2BlockVisitor(BlockVisitor, Py27StmtVisitor):
