@@ -13,36 +13,30 @@ from ..models import Method, Py27Method, Py3Method
 from ..util import NodeVisitor, Py27NodeVisitor, Py3NodeVisitor
 
 if typing.TYPE_CHECKING:
-    from ..models import Module
+    from ..models import Module, Py27Module, Py3Module
 
 
-MT = TypeVar('MT', _ast27.FunctionDef, _ast3.FunctionDef)
+AT = TypeVar('AT', _ast27.FunctionDef, _ast3.FunctionDef)
+MOD = TypeVar('MOD', 'Py27Module', 'Py3Module')
+MTH = TypeVar('MTH', Py27Method, Py3Method)
 
 
 @attr.s(slots=True)
-class MethodCollector(Generic[MT], NodeVisitor):
-    module: Module = attr.ib()
-    methods: MutableSet[Method] = attr.ib(factory=set, repr=False)
+class MethodCollector(Generic[AT, MOD, MTH], NodeVisitor):
+    module: MOD = attr.ib()
+    methods: MutableSet[MTH] = attr.ib(factory=set, repr=False)
     # use deque?
     _dot_prefix: Tuple[str, ...] = attr.ib(factory=tuple, repr=False)
 
-    @staticmethod
-    def all_in_module(module: 'Module') -> AbstractSet[Method]:
-        visitor: MethodCollector
-        if module.program.is_py2:
-            visitor = Py27MethodCollector(module)
-        elif module.program.is_py3:
-            visitor = Py3MethodCollector(module)
-        else:
-            m = f'module uses unknown Python version: {module.program.python}'
-            raise ValueError(m)
-
+    @classmethod
+    def collect(cls, module: MOD) -> AbstractSet[MTH]:
+        visitor = cls(module)
         visitor.visit(module.ast)
         return frozenset(visitor.methods)
 
     # TODO maintain qual name
 
-    def visit_FunctionDef(self, node: MT) -> None:
+    def visit_FunctionDef(self, node: AT) -> None:
         name = node.name
         self._dot_prefix = self._dot_prefix + (name,)
         qual_name = '.'.join(self._dot_prefix)
@@ -54,29 +48,32 @@ class MethodCollector(Generic[MT], NodeVisitor):
         self._dot_prefix = self._dot_prefix[:-1]
 
     @abc.abstractmethod
-    def _create_method(self, name: str, qual_name: str, node: MT) -> Method:
+    def _create_method(self, name: str, qual_name: str, node: AT) -> MTH:
         ...
 
 
-class Py27MethodCollector(MethodCollector[_ast27.FunctionDef],
+class Py27MethodCollector(
+        MethodCollector[_ast27.FunctionDef, 'Py27Module', Py27Method],
         Py27NodeVisitor):
     def _create_method(self,
                        name: str,
                        qual_name: str,
                        node: _ast27.FunctionDef
-                       ) -> Method:
+                       ) -> Py27Method:
         return Py27Method(module=self.module,
-                      name=name,
-                      qual_name=qual_name,
-                      ast=node)
+                          name=name,
+                          qual_name=qual_name,
+                          ast=node)
 
 
-class Py3MethodCollector(MethodCollector[_ast3.FunctionDef], Py3NodeVisitor):
+class Py3MethodCollector(
+        MethodCollector[_ast3.FunctionDef, 'Py3Module', Py3Method],
+        Py3NodeVisitor):
     def _create_method(self,
                        name: str,
                        qual_name: str,
                        node: _ast3.FunctionDef
-                       ) -> Method:
+                       ) -> Py3Method:
         return Py3Method(module=self.module,
                          name=name,
                          qual_name=qual_name,
