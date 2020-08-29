@@ -61,7 +61,7 @@ class _Py2ImportFinder(ImportFinder):
 
     def for_module(self, module: str) -> Set[str]:
         visitor = _Py2ImportFinder._Visitor(module)
-        visitor.visit(self.program.module_to_ast[module])
+        visitor.visit(self.program.modules[module].ast)
         return visitor.imports
 
 
@@ -71,5 +71,5 @@ class _Py3ImportFinder(ImportFinder):
 
     def for_module(self, module: str) -> Set[str]:
         visitor = _Py3ImportFinder._Visitor(module)
-        visitor.visit(self.program.module_to_ast[module])
+        visitor.visit(self.program.modules[module].ast)
         return visitor.imports

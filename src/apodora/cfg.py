@@ -5,10 +5,14 @@ from collections import deque
 from typing import (AbstractSet, Deque, Dict, List, MutableSequence, Optional,
                     Tuple)
 from typed_ast import ast27, ast3
+import abc
+import ast
 import typing
 
 from loguru import logger
 import attr
+
+from .util import NodeVisitor, Py27NodeVisitor, Py3NodeVisitor
 
 if typing.TYPE_CHECKING:
     from .program import Program
@@ -28,20 +32,16 @@ class BasicBlock:
 
 
 @attr.s(slots=True)
-class ModuleCFGVisitor:
+class ModuleCFGVisitor(NodeVisitor):
+    """
+    Limitation: this doesn't track module aliases.
+    """
     module: str = attr.ib()
     namespace: str = attr.ib(init=False)
 
     def __attrs_post_init__(self) -> None:
         self.namespace = self.module
 
-
-class Py27ModuleCFGVisitor(ModuleCFGVisitor, ast27.NodeVisitor):
-    pass
-
-
-class Py3ModuleCFGVisitor(ModuleCFGVisitor, ast3.NodeVisitor):
-    pass
 
 
 @attr.s(slots=True)
@@ -63,13 +63,15 @@ class ModuleCFG:
 
     @classmethod
     def build(cls, program: 'Program', module: str) -> 'ModuleCFG':
+        raise NotImplementedError
+
         ast = program.module_to_ast[module]
 
         visitor: ModuleCFGVisitor
         if program.is_py2:
-            visitor = Py3ModuleCFGVisitor(module=module)
-        elif program.is_py3:
             visitor = Py27ModuleCFGVisitor(module=module)
+        elif program.is_py3:
+            visitor = Py3ModuleCFGVisitor(module=module)
         else:
             m = f"unable to build CFG for Python version {program.python}"
             raise ValueError(m)
