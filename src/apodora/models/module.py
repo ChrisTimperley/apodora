@@ -4,6 +4,7 @@ __all__ = ('Module',)
 from typing import AbstractSet, Any
 import typing
 
+from loguru import logger
 import attr
 
 if typing.TYPE_CHECKING:
@@ -25,5 +26,6 @@ class Module:
         return super().__getattr__(name)
 
     def _compute_ast(self) -> Any:
+        logger.debug(f'computing AST for module: {self}')
         self.ast = self.program.parse(self.source)
         return self.ast
