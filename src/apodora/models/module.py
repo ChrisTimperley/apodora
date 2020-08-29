@@ -16,7 +16,7 @@ from ..helpers import Py27ImportVisitor, Py3ImportVisitor
 from ..helpers import Py27MethodCollector, Py3MethodCollector
 
 if typing.TYPE_CHECKING:
-    from ..program import Program
+    from .program import Program
 
 AT = TypeVar('AT', _ast27.AST, _ast3.AST)
 MT = TypeVar('MT', Py27Method, Py3Method)

@@ -11,7 +11,7 @@ import types
 
 import attr
 
-from .models import Module, Py27Module, Py3Module
+from .module import Module, Py27Module, Py3Module
 
 T = TypeVar('T', ast27.AST, ast3.AST)
 

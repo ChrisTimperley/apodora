@@ -6,7 +6,7 @@ import attr
 import graphviz
 
 if typing.TYPE_CHECKING:
-    from ..program import Program
+    from ..models import Program
 
 
 @attr.s(slots=True, auto_attribs=True)
