@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 from .blocks import BlockVisitor
-from .imports import ImportFinder
+from .imports import ImportVisitor, Py27ImportVisitor, Py3ImportVisitor
