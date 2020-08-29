@@ -3,6 +3,7 @@ __all__ = ('Method', 'Py27Method', 'Py3Method')
 
 from typed_ast import ast27, ast3
 from typing import Generic, TypeVar
+import abc
 import typing
 
 import attr
