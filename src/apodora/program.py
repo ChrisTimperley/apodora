@@ -77,10 +77,6 @@ class Program(Generic[T], abc.ABC):
         assert module.program == self
         self.modules[module.name] = module
 
-    @abc.abstractmethod
-    def parse(self, source: str) -> T:
-        ...
-
 
 class Py27Program(Program[ast27.AST]):
     """Describes a Python 2.7 program."""
@@ -92,9 +88,6 @@ class Py27Program(Program[ast27.AST]):
     def is_py3(self) -> bool:
         return False
 
-    def parse(self, source: str) -> ast27.AST:
-        return ast27.parse(source)
-
 
 class Py3Program(Program[ast3.AST]):
     """Describes a Python 3 program."""
@@ -105,6 +98,3 @@ class Py3Program(Program[ast3.AST]):
     @property
     def is_py3(self) -> bool:
         return True
-
-    def parse(self, source: str) -> ast3.AST:
-        return ast3.parse(source)

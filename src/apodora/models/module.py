@@ -13,8 +13,7 @@ import attr
 
 from .method import Py27Method, Py3Method
 from ..helpers import Py27ImportVisitor, Py3ImportVisitor
-# from ..helpers import MethodCollector
-
+from ..helpers import Py27MethodCollector, Py3MethodCollector
 
 if typing.TYPE_CHECKING:
     from ..program import Program
@@ -49,14 +48,15 @@ class Module(Generic[AT, MT], abc.ABC):
             object.__setattr__(self, '_imports', imports)
         return self._imports
 
-#    @property
-#    def methods(self) -> Mapping[str, Method]:
-#        if not hasattr(self, '_methods'):
-#            methods = MethodCollector.for_module(self)
-#            name_to_method = {m.name: m for m in methods}
-#            name_to_method = MappingProxyType(name_to_method)
-#            object.__setattr__(self, '_methods', name_to_method)
-#        return self._methods
+    @property
+    def methods(self) -> Mapping[str, MT]:
+        if not hasattr(self, '_methods'):
+            logger.debug(f'computing methods for module: {self}')
+            methods = self._compute_methods()
+            name_to_method: Mapping[str, MT] = {m.name: m for m in methods}
+            name_to_method = MappingProxyType(name_to_method)
+            object.__setattr__(self, '_methods', name_to_method)
+        return self._methods
 
     @abc.abstractmethod
     def _compute_ast(self) -> AT:
@@ -64,6 +64,10 @@ class Module(Generic[AT, MT], abc.ABC):
 
     @abc.abstractmethod
     def _compute_imports(self) -> AbstractSet[str]:
+        ...
+
+    @abc.abstractmethod
+    def _compute_methods(self) -> AbstractSet[MT]:
         ...
 
 
@@ -76,6 +80,9 @@ class Py27Module(Module[_ast27.AST, Py27Method]):
         visitor.visit(self.ast)
         return visitor.imports
 
+    def _compute_methods(self) -> AbstractSet[Py27Method]:
+        return Py27MethodCollector.collect(self)
+
 
 class Py3Module(Module[_ast3.AST, Py3Method]):
     def _compute_ast(self) -> _ast3.AST:
@@ -85,3 +92,6 @@ class Py3Module(Module[_ast3.AST, Py3Method]):
         visitor = Py3ImportVisitor(module=self.name)
         visitor.visit(self.ast)
         return visitor.imports
+
+    def _compute_methods(self) -> AbstractSet[Py3Method]:
+        return Py3MethodCollector.collect(self)

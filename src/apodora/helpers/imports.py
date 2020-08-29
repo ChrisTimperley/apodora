@@ -9,9 +9,6 @@ import attr
 
 from ..util import NodeVisitor, Py27NodeVisitor, Py3NodeVisitor
 
-if typing.TYPE_CHECKING:
-    from ..models import Module
-
 
 @attr.s(slots=True)
 class ImportVisitor(NodeVisitor):
@@ -24,17 +21,6 @@ class ImportVisitor(NodeVisitor):
 
     def __attrs_post_init__(self) -> None:
         self._module_parts = self.module.split('.')
-
-    @staticmethod
-    def for_module(module: 'Module') -> 'ImportVisitor':
-        if module.program.is_py2:
-            kls = Py27ImportVisitor
-        elif module.program.is_py3:
-            kls = Py3ImportVisitor
-        else:
-            m = f'module uses unknown Python version: {module.python}'
-            raise ValueError(m)
-        return kls(module=module.name)
 
     def visit_Import(self, node) -> None:
         for alias in node.names:
