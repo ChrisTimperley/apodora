@@ -95,7 +95,6 @@ class BlockVisitor(StmtVisitor):
         # unless we've encountered a break/continue, connect the last
         # basic block inside the loop to both the header and end of the loop
         if not self._block.successors:
-            print("COOL?")
             self._block.successors += [loop_header_block, loop_end_block]
 
         # switch to building the loop end block
@@ -135,13 +134,13 @@ class BlockVisitor(StmtVisitor):
         self._block = after_block
 
     def visit_Return(self, node) -> None:
-        print(node)
         self._block.stmts.append(node)
         self._block.terminal = True
         self._block = self.create_block(terminal=True)  # unreachable
 
     def visit_Break(self, node) -> None:
         assert self.inside_loop
+        assert self._loop_end_block
         self._block.stmts.append(node)
         self._block.successors.append(self._loop_end_block)
         self._block = self.create_block(terminal=True)  # unreachable
