@@ -4,7 +4,7 @@ __all__ = ('Module', 'Py27Module', 'Py3Module')
 from typed_ast import ast27 as _ast27
 from typed_ast import ast3 as _ast3
 from types import MappingProxyType
-from typing import AbstractSet, Any, Generic, Mapping, TypeVar
+from typing import AbstractSet, Generic, Mapping, TypeVar
 import abc
 import typing
 
