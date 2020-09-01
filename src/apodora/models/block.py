@@ -2,13 +2,13 @@
 __all__ = ('BasicBlock', 'BlockNumbering')
 
 from collections import deque
-from typing import Any, Deque, List, Set
+from typing import Any, Deque, Iterator, List, Set
 
 import attr
 
 
 @attr.s(slots=True)
-class BlockNumbering:
+class BlockNumbering(Iterator[int]):
     _next: int = attr.ib(default=0)
 
     @classmethod
