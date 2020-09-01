@@ -14,7 +14,7 @@ class ImportGraph:
     _dot: graphviz.Digraph
 
     @classmethod
-    def for_program(self, program: 'Program') -> 'ImportGraph':
+    def for_program(cls, program: 'Program') -> 'ImportGraph':
         dot = graphviz.Digraph(comment='Import Graph')
 
         for module_name in program.modules:
