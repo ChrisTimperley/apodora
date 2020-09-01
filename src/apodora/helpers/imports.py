@@ -2,8 +2,6 @@
 __all__ = ('ImportVisitor', 'Py27ImportVisitor', 'Py3ImportVisitor')
 
 from typing import Sequence, Set
-import abc
-import typing
 
 import attr
 
