@@ -48,7 +48,7 @@ class BlockVisitor(StmtVisitor):
                      predecessors: Optional[List['BasicBlock']] = None,
                      successors: Optional[List['BasicBlock']] = None,
                      terminal: bool = False
-                     ) -> None:
+                     ) -> BasicBlock:
         block = BasicBlock.create_with_numbering(self.numbering)
         block.terminal = terminal
         if predecessors:
