@@ -3,11 +3,8 @@ __all__ = ('Program', 'Py27Program', 'Py3Program')
 
 from types import MappingProxyType
 from typed_ast import ast27, ast3
-from typing import (AbstractSet, Callable, Generic, Mapping, MutableMapping,
-                    TypeVar)
+from typing import Generic, Mapping, MutableMapping, TypeVar
 import abc
-import functools
-import types
 
 import attr
 
