@@ -9,11 +9,11 @@ import typing
 
 import attr
 
-from ..models import Method, Py27Method, Py3Method
+from ..models import Py27Method, Py3Method
 from ..util import NodeVisitor, Py27NodeVisitor, Py3NodeVisitor
 
 if typing.TYPE_CHECKING:
-    from ..models import Module, Py27Module, Py3Module
+    from ..models import Module, Py27Module, Py3Module  # noqa: F401
 
 
 AT = TypeVar('AT', _ast27.FunctionDef, _ast3.FunctionDef)
